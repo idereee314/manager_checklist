@@ -219,6 +219,23 @@
   </button>
 </div>
 
+<!-- Confirm dialog -->
+<div class="overlay confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+    </div>
+    <p id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="confirm-no" onclick="confirmNo()">Болих</button>
+      <button class="confirm-yes" onclick="confirmYes()">Устгах</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 

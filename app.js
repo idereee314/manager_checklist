@@ -30,7 +30,13 @@ function allDone(t) {
 }
 
 function dayTasks(date) {
-  return tasks.filter(t => t.date === date).sort((a, b) => a.time < b.time ? -1 : 1);
+  return tasks.filter(t => t.date === date).sort((a, b) => {
+    // Цаггүй task-ийг хамгийн сүүлд харуулна
+    if (!a.time && !b.time) return 0;
+    if (!a.time) return 1;
+    if (!b.time) return -1;
+    return a.time < b.time ? -1 : a.time > b.time ? 1 : 0;
+  });
 }
 
 function fmtDate(y, m, d) {
@@ -136,20 +142,28 @@ async function toggleSub(tid, sid) {
 }
 
 async function delSubUI(tid, sid) {
-  const ok = await deleteSubtask(sid);
-  if (!ok) return;
   const t = tasks.find(t => t.id === tid);
-  if (t) t.subtasks = t.subtasks.filter(s => s.id !== sid);
-  renderDayPanel();
-  renderCal();
+  const s = t?.subtasks.find(s => s.id === sid);
+  if (!s) return;
+  showConfirm(`"${s.text}" устгах уу?`, async () => {
+    const ok = await deleteSubtask(sid);
+    if (!ok) return;
+    if (t) t.subtasks = t.subtasks.filter(s => s.id !== sid);
+    renderDayPanel();
+    renderCal();
+  });
 }
 
 async function delTaskUI(id) {
-  const ok = await deleteTask(id);
-  if (!ok) return;
-  tasks = tasks.filter(t => t.id !== id);
-  renderDayPanel();
-  renderCal();
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  showConfirm(`"${t.name}" устгах уу?`, async () => {
+    const ok = await deleteTask(id);
+    if (!ok) return;
+    tasks = tasks.filter(t => t.id !== id);
+    renderDayPanel();
+    renderCal();
+  });
 }
 
 async function addSub(tid) {
@@ -184,6 +198,7 @@ function selectDate(date) {
   selDate = date;
   renderCal();
   renderDayPanel();
+  if (isMobile()) switchTab('tasks');
 }
 
 function renderCal() {
@@ -655,22 +670,7 @@ function switchTab(tab) {
   }
 }
 
-// Patch renderCal so that clicking a date auto-switches to tasks on mobile
-const _origRenderCal = renderCal;
-function renderCal() {
-  _origRenderCal();
-  // After render, patch each cal-day onclick to also switchTab
-  if (isMobile()) {
-    document.querySelectorAll('.cal-day').forEach(el => {
-      const orig = el.getAttribute('onclick');
-      if (orig && !orig.includes('switchTab')) {
-        el.setAttribute('onclick', orig + "; switchTab('tasks')");
-      }
-    });
-  }
-}
-
-// Init
+// Init mobile
 if (isMobile()) {
   switchTab('tasks');
 }
@@ -748,4 +748,23 @@ async function saveEditTask() {
   showToast('Хадгалагдлаа ✓');
   renderCal();
   renderDayPanel();
+}
+
+// ── Confirm dialog ────────────────────────
+let confirmCallback = null;
+
+function showConfirm(msg, onYes) {
+  confirmCallback = onYes;
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+
+function confirmYes() {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+}
+
+function confirmNo() {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  confirmCallback = null;
 }
