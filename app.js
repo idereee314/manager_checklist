@@ -363,12 +363,33 @@ function renderDayPanel() {
 }
 
 // ── Modal ─────────────────────────────────
+function setQuickDate(daysFromNow) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  const val = d.toISOString().slice(0, 10);
+  document.getElementById('f-date').value = val;
+  document.querySelectorAll('.dq-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === [0,1,7].indexOf(daysFromNow));
+  });
+}
+
+function setQuickTime(val) {
+  document.getElementById('f-time').value = val;
+  document.querySelectorAll('.tq-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent === val);
+  });
+}
 function openModal() {
-  document.getElementById('f-name').value = '';
-  document.getElementById('f-date').value = selDate;
-  document.getElementById('f-time').value = '';
-  document.getElementById('overlay').classList.add('show');
-  setTimeout(() => document.getElementById('f-name').focus(), 50);
+  document.getElementById("f-name").value = "";
+  document.getElementById("f-date").value = selDate;
+  document.getElementById("f-time").value = "";
+  const diff = Math.round((new Date(selDate) - new Date(todayStr())) / 86400000);
+  document.querySelectorAll(".dq-btn").forEach((b, i) => {
+    b.classList.toggle("active", (i === 0 && diff === 0) || (i === 1 && diff === 1));
+  });
+  document.querySelectorAll(".tq-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("overlay").classList.add("show");
+  setTimeout(() => document.getElementById("f-name").focus(), 50);
 }
 
 function closeModal() {

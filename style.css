@@ -357,6 +357,22 @@ body {
 .btn-save:hover { opacity: 0.85; }
 .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── Modal date/time quick buttons ──────── */
+.label-hint { font-size: 10px; color: var(--text-hint); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.date-quick, .time-quick {
+  display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.dq-btn, .tq-btn {
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border-md);
+  background: var(--surface2); color: var(--text-muted);
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.dq-btn:hover, .tq-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.dq-btn.active, .tq-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
 /* ── Toast ───────────────────────────────── */
 .toast {
   position: fixed; bottom: 24px; right: 24px;

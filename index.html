@@ -87,20 +87,33 @@
         </svg>
       </button>
     </div>
+
     <div class="field">
       <label>Ажлын нэр</label>
       <input type="text" id="f-name" placeholder="Ажлын нэр оруулна уу..."/>
     </div>
-    <div class="row2">
-      <div class="field">
-        <label>Огноо</label>
-        <input type="date" id="f-date"/>
+
+    <div class="field">
+      <label>Огноо</label>
+      <div class="date-quick">
+        <button class="dq-btn" onclick="setQuickDate(0)">Өнөөдөр</button>
+        <button class="dq-btn" onclick="setQuickDate(1)">Маргааш</button>
+        <button class="dq-btn" onclick="setQuickDate(7)">7 хоног</button>
       </div>
-      <div class="field">
-        <label>Цаг</label>
-        <input type="time" id="f-time"/>
-      </div>
+      <input type="date" id="f-date"/>
     </div>
+
+    <div class="field">
+      <label>Цаг <span class="label-hint">(заавал биш)</span></label>
+      <div class="time-quick">
+        <button class="tq-btn" onclick="setQuickTime('09:00')">09:00</button>
+        <button class="tq-btn" onclick="setQuickTime('12:00')">12:00</button>
+        <button class="tq-btn" onclick="setQuickTime('14:00')">14:00</button>
+        <button class="tq-btn" onclick="setQuickTime('17:00')">17:00</button>
+      </div>
+      <input type="time" id="f-time" step="1800"/>
+    </div>
+
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">Болих</button>
       <button class="btn-save" id="btn-save" onclick="saveTask()">Нэмэх</button>
