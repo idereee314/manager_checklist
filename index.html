@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Manager Dashboard</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-screen" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Өгөгдөл ачаалж байна...</div>
+</div>
+
+<!-- App -->
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot">M</div>
+      <span class="brand-name">Manager Board</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-stats" id="topbar-stats"></div>
+      <button class="add-btn" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Ажил нэмэх
+      </button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Calendar -->
+    <div class="cal-panel">
+      <div class="cal-nav">
+        <button class="nav-btn" onclick="shiftMonth(-1)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <span class="cal-month" id="cal-month-label"></span>
+        <button class="nav-btn" onclick="shiftMonth(1)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="cal-weekdays">
+        <span>Дав</span><span>Мяг</span><span>Лха</span>
+        <span>Пүр</span><span>Баа</span><span>Бям</span><span>Ням</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <!-- Day panel -->
+    <div class="day-panel">
+      <div class="day-header">
+        <div class="day-header-left">
+          <h2 id="day-title"></h2>
+          <div class="day-sub" id="day-sub"></div>
+        </div>
+        <div class="day-prog-wrap">
+          <div class="day-prog-outer">
+            <div class="day-prog-inner" id="day-prog-fill" style="width:0%"></div>
+          </div>
+          <span class="day-prog-pct" id="day-prog-pct">0%</span>
+        </div>
+      </div>
+      <div class="task-list-wrap" id="task-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Шинэ ажил нэмэх</h3>
+      <button class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="field">
+      <label>Ажлын нэр</label>
+      <input type="text" id="f-name" placeholder="Ажлын нэр оруулна уу..."/>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Огноо</label>
+        <input type="date" id="f-date"/>
+      </div>
+      <div class="field">
+        <label>Цаг</label>
+        <input type="time" id="f-time"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Болих</button>
+      <button class="btn-save" id="btn-save" onclick="saveTask()">Нэмэх</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
