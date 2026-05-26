@@ -579,98 +579,6 @@ body {
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.error { border-color: var(--red); color: var(--red); }
 
-/* ── Responsive / Mobile ─────────────────── */
-@media (max-width: 768px) {
-  /* App layout */
-  body { height: 100dvh; overflow: hidden; }
-  .app { height: 100dvh; display: flex; flex-direction: column; }
-  .main { flex: 1; overflow: hidden; flex-direction: column; }
-
-  /* Topbar */
-  .topbar { padding: 10px 16px; }
-  .topbar-stats { display: none; }
-  .brand-name { font-size: 14px; }
-  .add-btn { padding: 7px 13px; font-size: 12px; }
-  .add-btn svg { width: 12px; height: 12px; }
-
-  /* Mobile: top = calendar strip, bottom = day panel */
-  .cal-panel {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    /* Compact height on mobile */
-  }
-  .cal-inner { display: flex; flex-direction: column; }
-  .cal-nav { padding: 10px 14px 6px; }
-  .cal-month { font-size: 13px; }
-  .nav-btn { width: 26px; height: 26px; }
-
-  .cal-weekdays { padding: 0 8px; }
-  .cal-weekdays span { font-size: 9px; }
-  .cal-grid { padding: 0 8px 6px; gap: 1px; }
-  .cal-day { border-radius: 6px; padding-top: 3px; }
-  .day-num { font-size: 11px; }
-  .cal-day.today .day-num { width: 20px; height: 20px; font-size: 11px; }
-  .day-dots { gap: 1px; margin-top: 2px; }
-  .day-dot { width: 3px; height: 3px; }
-
-  /* Hide bg image section on mobile to save space */
-  .cal-bottom { display: none; }
-  .cal-settings { display: none; }
-
-  /* Day panel scrollable */
-  .day-panel { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-  .day-header { padding: 12px 16px 10px; }
-  .day-header-left h2 { font-size: 16px; }
-  .day-sub { font-size: 11px; }
-  .day-prog-outer { width: 80px; }
-  .day-prog-pct { font-size: 11px; }
-  .task-list-wrap { padding: 12px 16px 80px; }
-
-  /* Task cards */
-  .task-block { margin-bottom: 8px; }
-  .task-row { padding: 11px 12px; gap: 8px; }
-  .task-title { font-size: 13px; }
-  .task-subtitle { font-size: 10px; }
-  .big-check { width: 20px; height: 20px; }
-  .big-check svg { width: 10px; height: 10px; }
-  .badge { font-size: 10px; padding: 2px 7px; }
-  .ring-mini { width: 24px; height: 24px; }
-  .ring-mini .rl { font-size: 7px; }
-
-  /* Subtasks */
-  .sub-list { padding: 4px 12px 4px 40px; }
-  .sub-add-wrap { padding: 6px 12px 10px 40px; }
-  .sub-txt { font-size: 12px; }
-
-  /* Modal - full screen on mobile */
-  .overlay { padding: 0; align-items: flex-end; }
-  .modal {
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    padding: 1.25rem 1.25rem 2rem;
-    max-width: 100%;
-    width: 100%;
-    max-height: 90dvh;
-    overflow-y: auto;
-  }
-  .modal-header h3 { font-size: 15px; }
-  .field input, .field select { font-size: 16px; /* prevent zoom on iOS */ }
-  .time-selects select { font-size: 16px; }
-  .dq-btn { padding: 7px 14px; font-size: 12px; }
-  .btn-cancel, .btn-save { padding: 11px 20px; font-size: 14px; }
-
-  /* Toast */
-  .toast { bottom: 16px; right: 16px; left: 16px; text-align: center; }
-}
-
-/* Extra small phones */
-@media (max-width: 380px) {
-  .cal-weekdays span { font-size: 8px; }
-  .day-num { font-size: 10px; }
-  .task-title { font-size: 12px; }
-  .dq-btn { padding: 6px 10px; font-size: 11px; }
-}
 /* ── Mobile bottom nav ───────────────────── */
 .mob-nav {
   display: none;
@@ -691,15 +599,102 @@ body {
 .mob-tab svg { transition: transform 0.15s; }
 .mob-tab.active svg { transform: scale(1.1); }
 
+/* ── Responsive / Mobile ─────────────────── */
 @media (max-width: 768px) {
-  .mob-nav { display: flex; }
-  /* Hide desktop add button on mobile */
+  body { height: 100dvh; overflow: hidden; }
+  .app { height: 100dvh; display: flex; flex-direction: column; }
+  .main { flex: 1; overflow: hidden; }
+
+  /* Topbar */
+  .topbar { padding: 10px 16px; }
+  .topbar-stats { display: none; }
   .topbar .add-btn { display: none; }
-  /* Panel switching */
-  .cal-panel { display: none; }
-  .day-panel { display: flex; }
+  .brand-name { font-size: 14px; }
+
+  /* Bottom nav */
+  .mob-nav { display: flex; }
+
+  /* Calendar panel — full screen, hidden by default */
+  .main { flex-direction: column; position: relative; }
+  .cal-panel {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 10;
+    border-right: none;
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+  }
   .cal-panel.mob-active { display: flex; }
+
+  /* Hide bottom image on mobile */
+  .cal-bottom { display: none !important; }
+  .cal-settings { display: none !important; }
+
+  /* Calendar compact */
+  .cal-inner { flex: 1; display: flex; flex-direction: column; }
+  .cal-nav { padding: 14px 16px 8px; }
+  .cal-month { font-size: 15px; }
+  .nav-btn { width: 32px; height: 32px; }
+  .cal-weekdays { padding: 0 10px; }
+  .cal-weekdays span { font-size: 10px; }
+  .cal-grid { padding: 0 10px 10px; gap: 2px; }
+  .cal-day { border-radius: 8px; padding-top: 6px; }
+  .day-num { font-size: 13px; }
+  .cal-day.today .day-num { width: 24px; height: 24px; font-size: 13px; }
+  .day-dots { gap: 2px; margin-top: 3px; }
+  .day-dot { width: 4px; height: 4px; }
+
+  /* Day panel — full screen, shown by default */
+  .day-panel {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
   .day-panel.mob-hidden { display: none; }
+  .day-header { padding: 14px 16px 12px; }
+  .day-header-left h2 { font-size: 17px; }
+  .day-sub { font-size: 11px; }
+  .day-prog-outer { width: 90px; }
+  .day-prog-pct { font-size: 11px; }
+  .task-list-wrap { padding: 12px 16px 90px; flex: 1; overflow-y: auto; }
+
+  /* Task cards */
+  .task-block { margin-bottom: 8px; border-radius: 12px; }
+  .task-row { padding: 12px 13px; gap: 8px; }
+  .task-title { font-size: 13.5px; }
+  .task-subtitle { font-size: 10px; }
+  .big-check { width: 22px; height: 22px; }
+  .badge { font-size: 10px; padding: 2px 7px; }
+  .ring-mini { width: 26px; height: 26px; }
+  .ring-mini .rl { font-size: 7px; }
+
+  /* Subtasks */
+  .sub-list { padding: 4px 13px 4px 43px; }
+  .sub-add-wrap { padding: 7px 13px 11px 43px; }
+  .sub-txt { font-size: 12px; }
+
+  /* Modal - bottom sheet */
+  .overlay { padding: 0; align-items: flex-end; }
+  .modal {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 1.25rem 1.25rem 2rem;
+    max-width: 100%; width: 100%;
+    max-height: 92dvh; overflow-y: auto;
+  }
+  .modal-header h3 { font-size: 15px; }
+  .field input, .field select { font-size: 16px; }
+  .time-selects select { font-size: 16px; }
+  .dq-btn { padding: 7px 14px; font-size: 13px; }
+  .btn-cancel, .btn-save { padding: 12px 22px; font-size: 14px; }
+  .toast { bottom: 80px; right: 16px; left: 16px; text-align: center; }
+}
+
+@media (max-width: 380px) {
+  .day-num { font-size: 11px; }
+  .cal-day.today .day-num { width: 20px; height: 20px; font-size: 11px; }
+  .task-title { font-size: 12.5px; }
 }
 
 /* ── Edit task button ────────────────────── */

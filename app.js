@@ -15,7 +15,8 @@ let selDate   = todayStr();
 
 // ── Helpers ───────────────────────────────
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function prog(t) {
@@ -33,7 +34,8 @@ function dayTasks(date) {
 }
 
 function fmtDate(y, m, d) {
-  return new Date(y, m, d).toISOString().slice(0, 10);
+  const dt = new Date(y, m, d);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
 }
 
 function showToast(msg, isError = false) {
@@ -320,6 +322,12 @@ function renderDayPanel() {
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </button>
+          <button class="edit-task" onclick="openEditModal('${t.id}')" title="Засах">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
           <button class="del-task" onclick="delTaskUI('${t.id}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <polyline points="3 6 5 6 21 6"/>
@@ -395,7 +403,8 @@ function getPickerTime() {
 function setQuickDate(days) {
   const d = new Date();
   d.setDate(d.getDate() + days);
-  document.getElementById('f-date').value = d.toISOString().slice(0,10);
+  const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  document.getElementById('f-date').value = val;
   document.querySelectorAll('.dq-btn').forEach(b => {
     const map = {'Өнөөдөр':0,'Маргааш':1,'7 хоног':7};
     b.classList.toggle('active', map[b.textContent.trim()] === days);
@@ -621,15 +630,17 @@ function initBottomImg() {
   });
   if (url) applyBottomImg(url);
 }
-// ── Mobile tab switching ───────────────────
+// ── Mobile tab switching ─────────────────────
 let currentTab = 'tasks';
+
+function isMobile() { return window.innerWidth <= 768; }
 
 function switchTab(tab) {
   currentTab = tab;
-  const calPanel  = document.getElementById('cal-panel');
-  const dayPanel  = document.querySelector('.day-panel');
-  const tabCal    = document.getElementById('tab-cal');
-  const tabTasks  = document.getElementById('tab-tasks');
+  const calPanel = document.getElementById('cal-panel');
+  const dayPanel = document.querySelector('.day-panel');
+  const tabCal   = document.getElementById('tab-cal');
+  const tabTasks = document.getElementById('tab-tasks');
 
   if (tab === 'cal') {
     calPanel?.classList.add('mob-active');
@@ -644,16 +655,97 @@ function switchTab(tab) {
   }
 }
 
-// On mobile, after selecting a date switch to tasks tab
-const _origSelectDate = selectDate;
-function selectDate(date) {
-  _origSelectDate(date);
-  if (window.innerWidth <= 768) {
-    switchTab('tasks');
+// Patch renderCal so that clicking a date auto-switches to tasks on mobile
+const _origRenderCal = renderCal;
+function renderCal() {
+  _origRenderCal();
+  // After render, patch each cal-day onclick to also switchTab
+  if (isMobile()) {
+    document.querySelectorAll('.cal-day').forEach(el => {
+      const orig = el.getAttribute('onclick');
+      if (orig && !orig.includes('switchTab')) {
+        el.setAttribute('onclick', orig + "; switchTab('tasks')");
+      }
+    });
   }
 }
 
-// Init mobile: show tasks tab by default
-if (window.innerWidth <= 768) {
+// Init
+if (isMobile()) {
   switchTab('tasks');
+}
+
+// ── Edit task ──────────────────────────────
+let editingTaskId = null;
+
+function openEditModal(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  editingTaskId = id;
+
+  document.getElementById('ef-name').value = t.name;
+  document.getElementById('ef-date').value = t.date;
+
+  // Build hour/min options
+  const hSel = document.getElementById('ef-hour');
+  const mSel = document.getElementById('ef-min');
+  hSel.innerHTML = '<option value="">Цаг</option>';
+  for (let h = 7; h <= 22; h++) {
+    const o = document.createElement('option');
+    o.value = String(h).padStart(2,'0');
+    o.textContent = String(h).padStart(2,'0');
+    hSel.appendChild(o);
+  }
+  mSel.innerHTML = '<option value="">Мин</option>';
+  for (const m of [0,5,10,15,20,25,30,35,40,45,50,55]) {
+    const o = document.createElement('option');
+    o.value = String(m).padStart(2,'0');
+    o.textContent = String(m).padStart(2,'0');
+    mSel.appendChild(o);
+  }
+
+  // Set current values
+  if (t.time && t.time.includes(':')) {
+    const [h, m] = t.time.split(':');
+    hSel.value = h;
+    mSel.value = m;
+  }
+
+  document.getElementById('edit-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('ef-name').focus(), 50);
+}
+
+function closeEditModal() {
+  document.getElementById('edit-overlay').classList.remove('show');
+  editingTaskId = null;
+}
+
+function editOverlayClick(e) {
+  if (e.target === e.currentTarget) closeEditModal();
+}
+
+async function saveEditTask() {
+  const name = document.getElementById('ef-name').value.trim();
+  const date = document.getElementById('ef-date').value;
+  const h    = document.getElementById('ef-hour').value;
+  const m    = document.getElementById('ef-min').value;
+  const time = h ? `${h}:${m || '00'}` : null;
+
+  if (!name || !date) { showToast('Нэр болон огноо оруулна уу', true); return; }
+
+  const btn = document.getElementById('edit-save-btn');
+  btn.disabled = true; btn.textContent = 'Хадгалж байна...';
+
+  const { error } = await sb.from('tasks').update({ name, date, time }).eq('id', editingTaskId);
+  btn.disabled = false; btn.textContent = 'Хадгалах';
+
+  if (error) { showToast('Алдаа гарлаа', true); return; }
+
+  const t = tasks.find(t => t.id === editingTaskId);
+  if (t) { t.name = name; t.date = date; t.time = time; }
+
+  closeEditModal();
+  showToast('Хадгалагдлаа ✓');
+  renderCal();
+  renderDayPanel();
 }
