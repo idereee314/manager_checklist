@@ -621,3 +621,39 @@ function initBottomImg() {
   });
   if (url) applyBottomImg(url);
 }
+// ── Mobile tab switching ───────────────────
+let currentTab = 'tasks';
+
+function switchTab(tab) {
+  currentTab = tab;
+  const calPanel  = document.getElementById('cal-panel');
+  const dayPanel  = document.querySelector('.day-panel');
+  const tabCal    = document.getElementById('tab-cal');
+  const tabTasks  = document.getElementById('tab-tasks');
+
+  if (tab === 'cal') {
+    calPanel?.classList.add('mob-active');
+    dayPanel?.classList.add('mob-hidden');
+    tabCal?.classList.add('active');
+    tabTasks?.classList.remove('active');
+  } else {
+    calPanel?.classList.remove('mob-active');
+    dayPanel?.classList.remove('mob-hidden');
+    tabCal?.classList.remove('active');
+    tabTasks?.classList.add('active');
+  }
+}
+
+// On mobile, after selecting a date switch to tasks tab
+const _origSelectDate = selectDate;
+function selectDate(date) {
+  _origSelectDate(date);
+  if (window.innerWidth <= 768) {
+    switchTab('tasks');
+  }
+}
+
+// Init mobile: show tasks tab by default
+if (window.innerWidth <= 768) {
+  switchTab('tasks');
+}
