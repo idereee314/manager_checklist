@@ -363,33 +363,56 @@ function renderDayPanel() {
 }
 
 // ── Modal ─────────────────────────────────
-function setQuickDate(daysFromNow) {
+function buildTimeOptions() {
+  const hSel = document.getElementById('f-hour');
+  const mSel = document.getElementById('f-min');
+  if (!hSel || !mSel) return;
+
+  hSel.innerHTML = '<option value="">Цаг</option>';
+  for (let h = 0; h <= 23; h++) {
+    const o = document.createElement('option');
+    o.value = String(h).padStart(2,'0');
+    o.textContent = String(h).padStart(2,'0');
+    hSel.appendChild(o);
+  }
+
+  mSel.innerHTML = '<option value="">Мин</option>';
+  for (let m = 0; m <= 59; m++) {
+    const o = document.createElement('option');
+    o.value = String(m).padStart(2, '0');
+    o.textContent = String(m).padStart(2, '0');
+    mSel.appendChild(o);
+  }
+}
+
+function getPickerTime() {
+  const h = document.getElementById('f-hour')?.value;
+  const m = document.getElementById('f-min')?.value;
+  if (!h) return '';
+  return `${h}:${m || '00'}`;
+}
+
+function setQuickDate(days) {
   const d = new Date();
-  d.setDate(d.getDate() + daysFromNow);
-  const val = d.toISOString().slice(0, 10);
-  document.getElementById('f-date').value = val;
-  document.querySelectorAll('.dq-btn').forEach((b, i) => {
-    b.classList.toggle('active', i === [0,1,7].indexOf(daysFromNow));
+  d.setDate(d.getDate() + days);
+  document.getElementById('f-date').value = d.toISOString().slice(0,10);
+  document.querySelectorAll('.dq-btn').forEach(b => {
+    const map = {'Өнөөдөр':0,'Маргааш':1,'7 хоног':7};
+    b.classList.toggle('active', map[b.textContent.trim()] === days);
   });
 }
 
-function setQuickTime(val) {
-  document.getElementById('f-time').value = val;
-  document.querySelectorAll('.tq-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent === val);
-  });
-}
 function openModal() {
-  document.getElementById("f-name").value = "";
-  document.getElementById("f-date").value = selDate;
-  document.getElementById("f-time").value = "";
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-date').value = selDate;
+  buildTimeOptions();
   const diff = Math.round((new Date(selDate) - new Date(todayStr())) / 86400000);
-  document.querySelectorAll(".dq-btn").forEach((b, i) => {
-    b.classList.toggle("active", (i === 0 && diff === 0) || (i === 1 && diff === 1));
+  document.querySelectorAll('.dq-btn').forEach(b => {
+    const map = {'Өнөөдөр':0,'Маргааш':1,'7 хоног':7};
+    b.classList.toggle('active', map[b.textContent.trim()] === diff);
   });
-  document.querySelectorAll(".tq-btn").forEach(b => b.classList.remove("active"));
-  document.getElementById("overlay").classList.add("show");
-  setTimeout(() => document.getElementById("f-name").focus(), 50);
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(() => document.getElementById('f-name').focus(), 50);
 }
 
 function closeModal() {
@@ -403,16 +426,13 @@ function overlayClick(e) {
 async function saveTask() {
   const name = document.getElementById('f-name').value.trim();
   const date = document.getElementById('f-date').value;
-  const time = document.getElementById('f-time').value;
-  if (!name || !date) return;
+  const time = getPickerTime();
+  if (!name || !date) { showToast('Нэр болон огноо оруулна уу', true); return; }
 
   const btn = document.getElementById('btn-save');
-  btn.disabled    = true;
-  btn.textContent = 'Хадгалж байна...';
-
+  btn.disabled = true; btn.textContent = 'Хадгалж байна...';
   const task = await createTask(name, date, time);
-  btn.disabled    = false;
-  btn.textContent = 'Нэмэх';
+  btn.disabled = false; btn.textContent = 'Нэмэх';
   if (!task) return;
 
   tasks.push(task);
@@ -426,11 +446,178 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 // ── Init ──────────────────────────────────
 async function init() {
+  initTheme();
+  initBg();
   initView();
   await loadAll();
-  document.getElementById('loading').classList.add('hide');
+  document.getElementById("loading").classList.add("hide");
   renderCal();
   renderDayPanel();
+  initBottomImg();
 }
 
 init();
+
+// ── Theme ─────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('mgr-theme', next);
+  updateThemeIcon(next);
+}
+
+function updateThemeIcon(theme) {
+  const icon = document.getElementById('theme-icon');
+  if (!icon) return;
+  if (theme === 'light') {
+    icon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+  } else {
+    icon.innerHTML = `<circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('mgr-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeIcon(saved);
+}
+
+// ── Background image ──────────────────────
+function handleBgUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    localStorage.setItem('mgr-bg', ev.target.result);
+    applyBg(ev.target.result);
+    showToast('Зураг тохируулагдлаа ✓');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function applyBg(url) {
+  const img = document.getElementById('cal-bg-img');
+  const ovl = document.getElementById('cal-bg-overlay');
+  if (!img) return;
+  if (url) {
+    img.style.backgroundImage = `url(${url})`;
+    img.classList.add('has-image');
+    ovl.style.opacity = '1';
+  } else {
+    img.style.backgroundImage = '';
+    img.classList.remove('has-image');
+    ovl.style.opacity = '0';
+  }
+}
+
+function removeBg() {
+  localStorage.removeItem('mgr-bg');
+  applyBg(null);
+  showToast('Зураг хасагдлаа');
+}
+
+function initBg() {
+  const saved = localStorage.getItem('mgr-bg');
+  if (saved) applyBg(saved);
+}
+
+
+// ── Bottom image (Supabase Storage) ───────
+let currentFit = 'cover';
+let currentImgPath = null;
+
+async function handleBottomUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+
+  showToast('Зураг хадгалж байна...');
+
+  // Remove old image if exists
+  if (currentImgPath) {
+    await sb.storage.from('app-images').remove([currentImgPath]);
+  }
+
+  const ext = file.name.split('.').pop();
+  const path = `bottom/bg_${Date.now()}.${ext}`;
+
+  const { error } = await sb.storage.from('app-images').upload(path, file, {
+    cacheControl: '3600', upsert: true
+  });
+
+  if (error) { showToast('Алдаа гарлаа: ' + error.message, true); return; }
+
+  const { data } = sb.storage.from('app-images').getPublicUrl(path);
+  const url = data.publicUrl;
+
+  localStorage.setItem('mgr-bottom-url', url);
+  localStorage.setItem('mgr-bottom-path', path);
+  currentImgPath = path;
+
+  applyBottomImg(url);
+  showToast('Зураг хадгалагдлаа ✓');
+}
+
+function applyBottomImg(url) {
+  const img   = document.getElementById('cal-bottom-img');
+  const empty = document.getElementById('cal-bottom-empty');
+  const has   = document.getElementById('cal-bottom-has');
+  if (!img) return;
+  if (url) {
+    img.src = url;
+    img.style.objectFit = currentFit;
+    img.style.background = currentFit === 'contain' ? 'var(--surface3)' : 'transparent';
+    if (empty) empty.style.display = 'none';
+    if (has) { has.style.display = 'flex'; has.style.flexDirection = 'column'; }
+  } else {
+    img.src = '';
+    if (empty) empty.style.display = 'flex';
+    if (has)   has.style.display = 'none';
+  }
+}
+
+function setFit(fit) {
+  currentFit = fit;
+  localStorage.setItem('mgr-bottom-fit', fit);
+  const img = document.getElementById('cal-bottom-img');
+  if (img) {
+    img.style.objectFit = fit;
+    // contain-д дэвсгэр харагдахаар
+    img.style.background = fit === 'contain' ? 'var(--surface3)' : 'transparent';
+  }
+  document.querySelectorAll('.fit-btn').forEach(b => {
+    b.classList.toggle('active', b.id === 'fit-' + fit);
+  });
+}
+
+async function removeBottomImg() {
+  if (currentImgPath) {
+    await sb.storage.from('app-images').remove([currentImgPath]);
+    currentImgPath = null;
+    localStorage.removeItem('mgr-bottom-path');
+  }
+  localStorage.removeItem('mgr-bottom-url');
+  applyBottomImg(null);
+  showToast('Зураг хасагдлаа');
+}
+
+function initBottomImg() {
+  const url  = localStorage.getItem('mgr-bottom-url');
+  const path = localStorage.getItem('mgr-bottom-path');
+  const fit  = localStorage.getItem('mgr-bottom-fit') || 'contain';
+  currentFit = fit;
+  currentImgPath = path || null;
+  // Apply saved fit button state
+  document.querySelectorAll('.fit-btn').forEach(b => {
+    b.classList.toggle('active', b.id === 'fit-' + fit);
+  });
+  if (url) applyBottomImg(url);
+}
